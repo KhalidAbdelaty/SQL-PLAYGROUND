@@ -1,22 +1,78 @@
+/* Import fonts - MUST be before @tailwind directives */
+@import '@fontsource/space-grotesk/400.css';
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/space-grotesk/700.css';
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   Aurora Theme - CSS Variables
+   ============================================ */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* Typography */
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
 
+  /* Color scheme */
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #111827;
+  color: #F8FAFC;
+  background-color: #0F0F23;
 
+  /* Font rendering */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Theme colors as CSS variables */
+  --color-primary: #6366F1;
+  --color-primary-light: #818CF8;
+  --color-primary-dark: #4F46E5;
+  --color-accent: #22D3EE;
+  --color-accent-light: #67E8F9;
+  --color-background: #0F0F23;
+  --color-surface: rgba(30, 41, 59, 0.7);
+  --color-surface-light: rgba(30, 41, 59, 0.5);
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-border: rgba(99, 102, 241, 0.2);
+  --color-glow: rgba(99, 102, 241, 0.4);
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Border radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --transition-slow: 400ms;
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+/* ============================================
+   Base Styles
+   ============================================ */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -26,6 +82,8 @@
 body {
   margin: 0;
   overflow: hidden;
+  background: linear-gradient(180deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%);
+  min-height: 100vh;
 }
 
 #root {
@@ -33,81 +91,402 @@ body {
   height: 100vh;
 }
 
-/* Custom scrollbar */
+/* ============================================
+   Custom Scrollbar - Sleek Dark Theme
+   ============================================ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: rgba(15, 23, 42, 0.5);
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366F1 0%, #4F46E5 100%);
+  border-radius: 4px;
+  border: 2px solid rgba(15, 23, 42, 0.5);
 }
 
-/* Split pane gutter styling */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #818CF8 0%, #6366F1 100%);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #6366F1 rgba(15, 23, 42, 0.5);
+}
+
+/* ============================================
+   Split Pane Styling
+   ============================================ */
 .gutter {
-  background-color: #1f2937;
+  background-color: rgba(99, 102, 241, 0.1);
   background-repeat: no-repeat;
   background-position: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.gutter:hover {
+  background-color: rgba(99, 102, 241, 0.3);
 }
 
 .gutter.gutter-horizontal {
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
   cursor: col-resize;
+  background-image: linear-gradient(to bottom, 
+    transparent 30%, 
+    rgba(99, 102, 241, 0.5) 30%, 
+    rgba(99, 102, 241, 0.5) 70%, 
+    transparent 70%
+  );
+  background-size: 2px 24px;
 }
 
 .gutter.gutter-vertical {
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFCAMAAABl/6zIAAAABlBMVEUAAADMzMzIT8AyAAAAAXRSTlMAQObYZgAAABRJREFUeAFjYGRkYIAAAAASAAAF/vAQ8AAAAAABJRU5ErkJggg==');
   cursor: row-resize;
+  background-image: linear-gradient(to right, 
+    transparent 30%, 
+    rgba(99, 102, 241, 0.5) 30%, 
+    rgba(99, 102, 241, 0.5) 70%, 
+    transparent 70%
+  );
+  background-size: 24px 2px;
 }
 
-/* AG Grid theme customization */
+/* ============================================
+   AG Grid Theme Customization
+   ============================================ */
 .ag-theme-alpine-dark {
-  --ag-background-color: #111827;
-  --ag-header-background-color: #1f2937;
-  --ag-odd-row-background-color: #111827;
-  --ag-row-hover-color: #1f2937;
-  --ag-border-color: #374151;
-  --ag-header-foreground-color: #e5e7eb;
-  --ag-foreground-color: #d1d5db;
+  --ag-background-color: rgba(15, 15, 35, 0.8);
+  --ag-header-background-color: rgba(30, 41, 59, 0.8);
+  --ag-odd-row-background-color: rgba(15, 15, 35, 0.6);
+  --ag-row-hover-color: rgba(99, 102, 241, 0.1);
+  --ag-border-color: rgba(99, 102, 241, 0.2);
+  --ag-header-foreground-color: #E2E8F0;
+  --ag-foreground-color: #CBD5E1;
+  --ag-selected-row-background-color: rgba(99, 102, 241, 0.2);
+  --ag-range-selection-border-color: #6366F1;
+  --ag-input-focus-border-color: #6366F1;
 }
 
-/* Monaco Editor theme adjustments */
+.ag-theme-alpine-dark .ag-header {
+  backdrop-filter: blur(8px);
+}
+
+.ag-theme-alpine-dark .ag-row {
+  transition: background-color 0.2s ease;
+}
+
+/* ============================================
+   Monaco Editor Theme Adjustments
+   ============================================ */
 .monaco-editor {
   padding-top: 0 !important;
+  border-radius: 0.75rem;
+  overflow: hidden;
 }
 
 .monaco-editor .margin {
-  background-color: #111827 !important;
+  background-color: rgba(15, 15, 35, 0.9) !important;
 }
 
-/* Loading animation */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+.monaco-editor .monaco-editor-background {
+  background-color: rgba(15, 15, 35, 0.95) !important;
+}
+
+/* ============================================
+   Glassmorphism Utilities - Optimized for performance
+   ============================================ */
+.glass {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.glass-light {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+/* Only apply blur on capable devices */
+@media (min-width: 768px) {
+  @supports (backdrop-filter: blur(8px)) {
+    .glass-blur {
+      backdrop-filter: blur(8px);
+    }
   }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+/* ============================================
+   Glow Effects
+   ============================================ */
+.glow {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
 }
 
-/* Utility classes */
-.bg-gray-850 {
-  background-color: #1a202e;
+.glow-hover:hover {
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
 }
 
-.bg-gray-750 {
-  background-color: #2d3748;
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+}
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+}
+
+.glow-border {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.2), inset 0 0 10px rgba(99, 102, 241, 0.1);
+}
+
+/* ============================================
+   Gradient Backgrounds
+   ============================================ */
+.bg-aurora {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 25%, #A855F7 50%, #6366F1 75%, #4F46E5 100%);
+  background-size: 400% 400%;
+  animation: gradient-xy 15s ease infinite;
+}
+
+.bg-mesh {
+  background: 
+    radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(34, 211, 238, 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.2) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, rgba(34, 211, 238, 0.1) 0px, transparent 50%),
+    linear-gradient(180deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%);
+}
+
+.bg-space {
+  background: linear-gradient(180deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%);
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+.btn-primary {
+  @apply px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 
+         text-white font-medium rounded-xl
+         hover:from-primary-400 hover:to-primary-500
+         transition-all duration-300 ease-smooth
+         hover:shadow-glow hover:-translate-y-0.5
+         active:translate-y-0
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-slate-800/50 border border-slate-700
+         text-slate-300 font-medium rounded-xl
+         hover:bg-slate-700/50 hover:border-slate-600 hover:text-white
+         transition-all duration-300
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-ghost {
+  @apply px-4 py-2 bg-transparent
+         text-slate-400 font-medium rounded-xl
+         hover:bg-slate-800/50 hover:text-white
+         transition-all duration-300;
+}
+
+.btn-glow {
+  @apply relative overflow-hidden;
+}
+
+.btn-glow::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-primary-400 to-accent-400 
+         opacity-0 transition-opacity duration-300;
+}
+
+.btn-glow:hover::before {
+  @apply opacity-20;
+}
+
+/* ============================================
+   Input Styles
+   ============================================ */
+.input-glass {
+  @apply w-full px-4 py-3 
+         bg-slate-800/50 backdrop-blur-sm
+         border border-slate-700 rounded-xl
+         text-white placeholder-slate-500
+         focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20
+         transition-all duration-300;
+}
+
+.input-glass:focus {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+/* ============================================
+   Card Styles
+   ============================================ */
+.card-glass {
+  @apply bg-slate-900/60 backdrop-blur-xl 
+         border border-slate-700/50 rounded-2xl
+         shadow-glass;
+}
+
+.card-glass-hover {
+  @apply card-glass transition-all duration-300
+         hover:border-primary-500/30 hover:shadow-glow;
+}
+
+/* ============================================
+   Animation Utilities
+   ============================================ */
+.animate-in {
+  animation: fade-in 0.5s ease-out, slide-up 0.5s ease-out;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* Shimmer loading effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(99, 102, 241, 0.2) 50%,
+    rgba(99, 102, 241, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Floating animation */
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse glow animation */
+.pulse-glow {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Loading Skeleton
+   ============================================ */
+.skeleton {
+  @apply relative overflow-hidden bg-slate-800/50 rounded-lg;
+}
+
+.skeleton::after {
+  content: '';
+  @apply absolute inset-0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.1) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+/* ============================================
+   Selection Styles
+   ============================================ */
+::selection {
+  background-color: rgba(99, 102, 241, 0.4);
+  color: #F8FAFC;
+}
+
+/* ============================================
+   Focus Styles
+   ============================================ */
+:focus-visible {
+  outline: 2px solid #6366F1;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Custom Utility Classes
+   ============================================ */
+.text-gradient {
+  @apply bg-gradient-to-r from-primary-400 via-accent-400 to-primary-400 
+         bg-clip-text text-transparent;
+}
+
+.border-gradient {
+  border-image: linear-gradient(135deg, #6366F1, #22D3EE) 1;
+}
+
+/* Truncate with ellipsis */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Performance: Use GPU acceleration for animations */
+.animate-float,
+.animate-glow-pulse,
+.animate-shimmer {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Simple CSS animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }

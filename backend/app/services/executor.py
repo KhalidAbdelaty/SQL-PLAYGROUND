@@ -8,6 +8,7 @@ from app.database import db_manager
 from app.services.validator import query_validator
 from app.services.audit import audit_logger
 from app.services.analytics import analytics_service
+from app.services.cache import query_cache
 import config
 
 logger = logging.getLogger(__name__)
@@ -82,6 +83,14 @@ class QueryExecutor:
             }
         
         try:
+            # Check cache first for SELECT queries
+            cached_result = query_cache.get(query, database)
+            if cached_result:
+                logger.debug(f"Cache hit for query: {query[:50]}...")
+                cached_result['from_cache'] = True
+                cached_result['execution_time'] = 0.0
+                return cached_result
+            
             # Execute query in thread pool to avoid blocking
             loop = asyncio.get_event_loop()
             rows, columns, row_count = await loop.run_in_executor(
@@ -152,6 +161,10 @@ class QueryExecutor:
                 )
             except Exception as e:
                 logger.error(f"Failed to track analytics: {e}")
+            
+            # Cache successful SELECT results
+            query_cache.set(query, result, database)
+            result['from_cache'] = False
             
             return result
             

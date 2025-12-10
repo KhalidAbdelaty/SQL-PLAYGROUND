@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../services/authApi';
+import { resetSessionId } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -53,6 +54,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
+      // Reset session ID to clear previous user's history
+      resetSessionId();
+      
       const response = await authApi.login(username, password);
       
       // Store token (correct property name from backend)
@@ -79,6 +83,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, password, email) => {
     try {
+      // Reset session ID to clear previous user's history
+      resetSessionId();
+      
       const response = await authApi.registerSandbox({ username, email, password });
       
       // Store token (correct property name from backend)
@@ -122,6 +129,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout API error:', error);
       // Continue with local cleanup even if API fails
     }
+    
+    // Reset session ID to clear query history
+    resetSessionId();
     
     // Clear local state
     localStorage.removeItem('token');

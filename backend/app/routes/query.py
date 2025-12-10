@@ -1,13 +1,44 @@
-from fastapi import APIRouter, HTTPException, Header
-from typing import Optional
+from fastapi import APIRouter, HTTPException, Header, Depends, Request
+from typing import Optional, List
+from pydantic import BaseModel
 from app.models import QueryRequest, QueryResponse
 from app.services.executor import query_executor
 from app.services.validator import query_validator
+from app.services.cache import query_cache
+from app.services.formatter import query_formatter
+from app.services.saved_queries import saved_queries_service
 from app.utils.security import session_manager
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["query"])
+
+
+# Request/Response models for new endpoints
+class FormatRequest(BaseModel):
+    query: str
+    keyword_case: str = "upper"
+    identifier_case: Optional[str] = None
+    indent_width: int = 4
+    strip_comments: bool = False
+
+
+class SaveQueryRequest(BaseModel):
+    name: str
+    query: str
+    description: Optional[str] = None
+    database_name: Optional[str] = None
+    tags: Optional[List[str]] = None
+    is_favorite: bool = False
+
+
+class UpdateQueryRequest(BaseModel):
+    name: Optional[str] = None
+    query: Optional[str] = None
+    description: Optional[str] = None
+    database_name: Optional[str] = None
+    tags: Optional[List[str]] = None
+    is_favorite: Optional[bool] = None
 
 
 @router.post("/execute", response_model=QueryResponse)
@@ -155,3 +186,186 @@ async def get_session_info(
         "created": False,
         "info": info
     }
+
+
+# ============================================
+# Query Formatting Endpoints
+# ============================================
+
+@router.post("/query/format")
+async def format_query(request: FormatRequest):
+    """
+    Format/beautify SQL query
+    
+    - **query**: SQL query to format
+    - **keyword_case**: 'upper', 'lower', or 'capitalize'
+    - **identifier_case**: 'upper', 'lower', or null (unchanged)
+    - **indent_width**: Number of spaces for indentation
+    - **strip_comments**: Whether to remove comments
+    """
+    result = query_formatter.format(
+        query=request.query,
+        keyword_case=request.keyword_case,
+        identifier_case=request.identifier_case,
+        indent_width=request.indent_width,
+        strip_comments=request.strip_comments
+    )
+    return result
+
+
+@router.post("/query/minify")
+async def minify_query(request: FormatRequest):
+    """Minify SQL query (remove extra whitespace and comments)"""
+    result = query_formatter.minify(request.query)
+    return result
+
+
+@router.post("/query/analyze")
+async def analyze_query(request: FormatRequest):
+    """Analyze SQL query structure"""
+    result = query_formatter.analyze(request.query)
+    return result
+
+
+# ============================================
+# Cache Management Endpoints
+# ============================================
+
+@router.get("/cache/stats")
+async def get_cache_stats():
+    """Get query cache statistics"""
+    return query_cache.get_stats()
+
+
+@router.delete("/cache")
+async def clear_cache(database: Optional[str] = None):
+    """Clear query cache"""
+    count = query_cache.invalidate(database)
+    return {"message": f"Cleared {count} cached entries", "count": count}
+
+
+# ============================================
+# Saved Queries Endpoints
+# ============================================
+
+@router.get("/query/saved")
+async def get_saved_queries(
+    request: Request,
+    favorites_only: bool = False,
+    search: Optional[str] = None,
+    limit: int = 50
+):
+    """Get user's saved queries"""
+    # Get user from request state (set by auth middleware)
+    user = getattr(request.state, 'user', None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    queries = saved_queries_service.get_user_queries(
+        user_id=user['user_id'],
+        favorites_only=favorites_only,
+        search=search,
+        limit=limit
+    )
+    return {"queries": queries, "count": len(queries)}
+
+
+@router.post("/query/saved")
+async def save_query(
+    request: Request,
+    body: SaveQueryRequest
+):
+    """Save a query template"""
+    user = getattr(request.state, 'user', None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    saved = saved_queries_service.save_query(
+        user_id=user['user_id'],
+        name=body.name,
+        query=body.query,
+        description=body.description,
+        database_name=body.database_name,
+        tags=body.tags,
+        is_favorite=body.is_favorite
+    )
+    return {"message": "Query saved", "query": saved}
+
+
+@router.get("/query/saved/{query_id}")
+async def get_saved_query(
+    request: Request,
+    query_id: int
+):
+    """Get a specific saved query"""
+    user = getattr(request.state, 'user', None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    query = saved_queries_service.get_query(query_id)
+    if not query or query['user_id'] != user['user_id']:
+        raise HTTPException(status_code=404, detail="Query not found")
+    
+    return query
+
+
+@router.put("/query/saved/{query_id}")
+async def update_saved_query(
+    request: Request,
+    query_id: int,
+    body: UpdateQueryRequest
+):
+    """Update a saved query"""
+    user = getattr(request.state, 'user', None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    updated = saved_queries_service.update_query(
+        query_id=query_id,
+        user_id=user['user_id'],
+        name=body.name,
+        description=body.description,
+        query=body.query,
+        database_name=body.database_name,
+        tags=body.tags,
+        is_favorite=body.is_favorite
+    )
+    
+    if not updated:
+        raise HTTPException(status_code=404, detail="Query not found")
+    
+    return {"message": "Query updated", "query": updated}
+
+
+@router.delete("/query/saved/{query_id}")
+async def delete_saved_query(
+    request: Request,
+    query_id: int
+):
+    """Delete a saved query"""
+    user = getattr(request.state, 'user', None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    deleted = saved_queries_service.delete_query(query_id, user['user_id'])
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Query not found")
+    
+    return {"message": "Query deleted"}
+
+
+@router.post("/query/saved/{query_id}/favorite")
+async def toggle_favorite(
+    request: Request,
+    query_id: int
+):
+    """Toggle favorite status for a saved query"""
+    user = getattr(request.state, 'user', None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    updated = saved_queries_service.toggle_favorite(query_id, user['user_id'])
+    if not updated:
+        raise HTTPException(status_code=404, detail="Query not found")
+    
+    return {"message": "Favorite toggled", "is_favorite": updated['is_favorite']}

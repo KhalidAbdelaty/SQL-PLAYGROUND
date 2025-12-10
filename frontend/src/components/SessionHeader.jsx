@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Clock, LogOut, RefreshCw, User, Database, AlertCircle, X } from 'lucide-react';
+import { 
+  Clock, 
+  LogOut, 
+  RefreshCw, 
+  User, 
+  Database, 
+  AlertCircle, 
+  X,
+  Shield,
+  Sparkles
+} from 'lucide-react';
 
-const SessionHeader = () => {
+const SessionHeader = memo(() => {
   const { user, sessionExpiry, extendSession, logout, isAdmin, isSandbox } = useAuth();
   
   const [timeLeft, setTimeLeft] = useState('');
@@ -30,7 +40,6 @@ const SessionHeader = () => {
       const hours = Math.floor(minutes / 60);
       const mins = minutes % 60;
 
-      // Show warning if less than 10 minutes
       if (minutes < 10 && !showWarning) {
         setShowWarning(true);
       }
@@ -59,104 +68,136 @@ const SessionHeader = () => {
   const handleLogout = async () => {
     setLoading(true);
     await logout(cleanupOnLogout);
-    // Auth context will handle redirect
   };
 
   return (
-    <div className="bg-gray-800 border-b border-gray-700 px-4 py-2">
-      <div className="flex items-center justify-between">
-        {/* User Info */}
-        <div className="flex items-center gap-4">
+    <>
+      <div className="relative z-20 glass-dark border-b border-slate-700/50 px-3 sm:px-4 py-2">
+        <div className="flex items-center justify-between">
+          {/* User Info */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Avatar */}
+              <div className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                isAdmin 
+                  ? 'bg-gradient-to-br from-purple-500 to-pink-500' 
+                  : 'bg-gradient-to-br from-primary-500 to-accent-500'
+              }`}>
+                <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-slate-900" />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-white max-w-[100px] sm:max-w-none truncate">{user?.username}</span>
+                  <span className={`text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full ${
+                    isAdmin 
+                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
+                      : 'bg-primary-500/20 text-primary-300 border border-primary-500/30'
+                  }`}>
+                    {isAdmin ? (
+                      <span className="flex items-center gap-1">
+                        <Shield className="w-3 h-3" />
+                        <span className="hidden sm:inline">Admin</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        <span className="hidden sm:inline">Sandbox</span>
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {isSandbox && user?.database_name && (
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1 glass rounded-lg text-sm">
+                <Database className="w-4 h-4 text-accent-400" />
+                <span className="font-mono text-xs text-slate-300">{user.database_name}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Session Info & Actions */}
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${user ? 'bg-green-500' : 'bg-red-500'}`} />
-            <User className="w-4 h-4 text-gray-400" />
-            <span className="text-sm font-medium text-white">{user?.username}</span>
-            <span className={`text-xs px-2 py-0.5 rounded ${
-              isAdmin ? 'bg-purple-900/50 text-purple-300' : 'bg-blue-900/50 text-blue-300'
+            {/* Session Timer */}
+            <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg ${
+              showWarning 
+                ? 'bg-red-500/10 border border-red-500/30 text-red-400' 
+                : 'glass text-slate-300'
             }`}>
-              {user?.role}
-            </span>
-          </div>
-
-          {isSandbox && user?.database_name && (
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <Database className="w-4 h-4" />
-              <span className="font-mono text-xs">{user.database_name}</span>
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="text-xs sm:text-sm font-mono">{timeLeft}</span>
             </div>
-          )}
-        </div>
 
-        {/* Session Info & Actions */}
-        <div className="flex items-center gap-3">
-          {/* Session Timer */}
-          <div className={`flex items-center gap-2 px-3 py-1 rounded ${
-            showWarning ? 'bg-red-900/50 text-red-300' : 'bg-gray-700 text-gray-300'
-          }`}>
-            <Clock className="w-4 h-4" />
-            <span className="text-sm font-mono">{timeLeft}</span>
+            {/* Extend Session Button */}
+            <button
+              onClick={() => setShowExtendDialog(true)}
+              className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-primary-500/20 hover:bg-primary-500/30 border border-primary-500/30 text-primary-300 text-sm rounded-lg transition-all"
+              title="Extend Session"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Extend</span>
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={() => setShowLogoutDialog(true)}
+              className="flex items-center gap-2 px-2 sm:px-3 py-1.5 glass text-slate-400 hover:text-white hover:border-red-500/30 text-sm rounded-lg transition-all"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
           </div>
-
-          {/* Extend Session Button */}
-          <button
-            onClick={() => setShowExtendDialog(true)}
-            className="flex items-center gap-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
-            title="Extend session"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Extend
-          </button>
-
-          {/* Logout Button */}
-          <button
-            onClick={() => setShowLogoutDialog(true)}
-            className="flex items-center gap-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors"
-            title="Logout"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
         </div>
+
+        {/* Expiry Warning Banner */}
+        {showWarning && (
+          <div className="mt-2 p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start justify-between animate-fade-in">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
+              <div>
+                <p className="text-sm text-red-300 font-medium">Session Expiring Soon</p>
+                <p className="text-xs text-red-400/70 mt-0.5">
+                  Your session will expire in less than 10 minutes.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowWarning(false)}
+              className="text-red-400/70 hover:text-red-300 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
-
-      {/* Expiry Warning Banner */}
-      {showWarning && (
-        <div className="mt-2 p-2 bg-red-900/50 border border-red-700 rounded flex items-start justify-between">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" />
-            <div>
-              <p className="text-sm text-red-200 font-medium">Session Expiring Soon</p>
-              <p className="text-xs text-red-300 mt-0.5">
-                Your session will expire in less than 10 minutes. Extend now to keep working.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowWarning(false)}
-            className="text-red-400 hover:text-red-300"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       {/* Extend Session Dialog */}
       {showExtendDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-white mb-4">Extend Session</h3>
-            
-            <p className="text-sm text-gray-300 mb-4">
-              Extend your session to continue working. You can extend up to 24 hours total.
+        <div 
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          onClick={() => setShowExtendDialog(false)}
+        >
+          <div 
+            className="bg-slate-900/95 border border-slate-700/50 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-display font-bold text-white mb-2">Extend Session</h3>
+            <p className="text-sm text-slate-400 mb-6">
+              Extend your session to continue working. Maximum 24 hours.
             </p>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Extend by (hours):
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Extend by:
               </label>
               <select
                 value={extendHours}
                 onChange={(e) => setExtendHours(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary-500 transition-colors"
               >
                 <option value={1}>1 hour</option>
                 <option value={2}>2 hours</option>
@@ -167,18 +208,18 @@ const SessionHeader = () => {
               </select>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={handleExtend}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded transition-colors"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl disabled:opacity-50 transition-all hover:shadow-glow"
               >
                 {loading ? 'Extending...' : 'Extend Session'}
               </button>
               <button
                 onClick={() => setShowExtendDialog(false)}
                 disabled={loading}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+                className="px-4 py-3 glass text-slate-300 rounded-xl transition-all"
               >
                 Cancel
               </button>
@@ -189,18 +230,30 @@ const SessionHeader = () => {
 
       {/* Logout Confirmation Dialog */}
       {showLogoutDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-white mb-4">Logout Confirmation</h3>
+        <div 
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          onClick={() => setShowLogoutDialog(false)}
+        >
+          <div 
+            className="bg-slate-900/95 border border-slate-700/50 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-display font-bold text-white mb-2">Logout</h3>
             
             {isSandbox ? (
               <>
-                <p className="text-sm text-gray-300 mb-4">
+                <p className="text-sm text-slate-400 mb-4">
                   Do you want to delete your sandbox database?
                 </p>
 
-                <div className="bg-gray-900/50 border border-gray-600 rounded p-4 mb-4 space-y-3">
-                  <label className="flex items-start gap-3 cursor-pointer">
+                <div className="space-y-3 mb-6">
+                  <label 
+                    className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                      cleanupOnLogout 
+                        ? 'bg-red-500/10 border-red-500/30' 
+                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="cleanup"
@@ -210,13 +263,19 @@ const SessionHeader = () => {
                     />
                     <div>
                       <p className="text-sm font-medium text-white">Yes, delete everything</p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-slate-400 mt-1">
                         Your database and all data will be permanently deleted.
                       </p>
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label 
+                    className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                      !cleanupOnLogout 
+                        ? 'bg-primary-500/10 border-primary-500/30' 
+                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="cleanup"
@@ -226,37 +285,36 @@ const SessionHeader = () => {
                     />
                     <div>
                       <p className="text-sm font-medium text-white">No, keep for next login</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        Database will persist until session expires ({timeLeft} remaining).
+                      <p className="text-xs text-slate-400 mt-1">
+                        Database persists until session expires ({timeLeft} remaining).
                       </p>
                     </div>
                   </label>
                 </div>
 
                 {cleanupOnLogout && (
-                  <div className="bg-red-900/30 border border-red-700 rounded p-3 mb-4">
-                    <p className="text-xs text-red-200">
-                      ⚠️ <strong>Warning:</strong> This action cannot be undone. All tables, 
-                      views, and data in your sandbox will be permanently lost.
+                  <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl mb-6">
+                    <p className="text-xs text-red-300">
+                      ⚠️ <strong>Warning:</strong> This action cannot be undone.
                     </p>
                   </div>
                 )}
               </>
             ) : (
-              <p className="text-sm text-gray-300 mb-4">
+              <p className="text-sm text-slate-400 mb-6">
                 Are you sure you want to logout?
               </p>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={handleLogout}
                 disabled={loading}
-                className={`flex-1 px-4 py-2 ${
+                className={`flex-1 px-4 py-3 font-medium rounded-xl disabled:opacity-50 transition-all ${
                   cleanupOnLogout && isSandbox
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                } disabled:bg-gray-600 text-white rounded transition-colors`}
+                    ? 'bg-gradient-to-r from-red-500 to-red-600 text-white'
+                    : 'bg-gradient-to-r from-primary-500 to-primary-600 text-white'
+                }`}
               >
                 {loading ? 'Logging out...' : 
                  cleanupOnLogout && isSandbox ? 'Logout & Delete' : 
@@ -265,7 +323,7 @@ const SessionHeader = () => {
               <button
                 onClick={() => setShowLogoutDialog(false)}
                 disabled={loading}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+                className="px-4 py-3 glass text-slate-300 rounded-xl transition-all"
               >
                 Cancel
               </button>
@@ -273,8 +331,10 @@ const SessionHeader = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
-};
+});
+
+SessionHeader.displayName = 'SessionHeader';
 
 export default SessionHeader;

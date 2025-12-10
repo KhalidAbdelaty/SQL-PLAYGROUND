@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { History, Clock, CheckCircle, XCircle, Trash2, Copy } from 'lucide-react';
 import { apiService } from '../services/api';
+import { showToast } from './Toast';
 
-const QueryHistory = ({ onQuerySelect }) => {
+const QueryHistory = memo(({ onSelectQuery }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadHistory();
-    // Set up auto-refresh every 2 seconds
-    const interval = setInterval(loadHistory, 2000);
+    const interval = setInterval(loadHistory, 3000); // Reduced frequency
     return () => clearInterval(interval);
   }, []);
 
@@ -25,38 +25,42 @@ const QueryHistory = ({ onQuerySelect }) => {
   };
 
   const handleClearHistory = async () => {
-    if (confirm('Clear all query history?')) {
-      try {
-        await apiService.clearHistory();
-        setHistory([]);
-      } catch (err) {
-        console.error('Error clearing history:', err);
-      }
+    try {
+      await apiService.clearHistory();
+      setHistory([]);
+      showToast.success('Query history cleared');
+    } catch (err) {
+      console.error('Error clearing history:', err);
+      showToast.error('Failed to clear history');
     }
   };
 
-  const handleCopyQuery = (query) => {
+  const handleCopyQuery = (e, query) => {
+    e.stopPropagation();
     navigator.clipboard.writeText(query);
+    showToast.copied('Query copied to clipboard');
   };
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString();
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div className="h-full bg-gray-800 text-gray-200 flex flex-col min-h-0">
+    <div className="h-full flex flex-col min-h-0">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-2">
-          <History className="w-4 h-4" />
-          <h3 className="font-semibold text-sm">Query History</h3>
-          <span className="text-xs text-gray-400">({history.length})</span>
+      <div className="border-b border-slate-700/50 px-4 py-3 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <History className="w-4 h-4 text-primary-400" />
+          <h3 className="font-semibold text-sm text-white">History</h3>
+          <span className="text-xs px-2 py-0.5 bg-slate-800 rounded-full text-slate-400">
+            {history.length}
+          </span>
         </div>
         {history.length > 0 && (
           <button
-            onClick={handleClearHistory}
-            className="p-1 hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-red-400"
+            onClick={() => showToast.action('Clear all history?', 'Clear', handleClearHistory)}
+            className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors text-slate-500 hover:text-red-400"
             title="Clear history"
           >
             <Trash2 className="w-4 h-4" />
@@ -67,65 +71,66 @@ const QueryHistory = ({ onQuerySelect }) => {
       {/* History List */}
       <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-2">
         {loading ? (
-          <div className="text-center text-gray-400 py-4">Loading...</div>
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          </div>
         ) : history.length === 0 ? (
-          <div className="text-center text-gray-400 py-8">
-            <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No query history yet</p>
+          <div className="text-center py-8 animate-fade-in">
+            <History className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+            <p className="text-sm text-slate-500">No history yet</p>
+            <p className="text-xs text-slate-600 mt-1">Execute queries to see them here</p>
           </div>
         ) : (
           history.slice().reverse().map((item) => (
             <div
               key={item.id}
-              className="bg-gray-800 rounded p-3 hover:bg-gray-750 transition-colors group"
+              className="p-3 glass rounded-xl hover:border-primary-500/30 transition-all group cursor-pointer"
+              onClick={() => onSelectQuery(item.query)}
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   {item.success ? (
                     <CheckCircle className="w-4 h-4 text-green-400" />
                   ) : (
                     <XCircle className="w-4 h-4 text-red-400" />
                   )}
-                  <span className="text-xs text-gray-400">
-                    <Clock className="w-3 h-3 inline mr-1" />
+                  <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
                     {formatTime(item.timestamp)}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-slate-600">
                     {item.execution_time}s
                   </span>
-                  {item.success && (
-                    <span className="text-xs text-gray-500">
+                  {item.success && item.row_count > 0 && (
+                    <span className="text-xs px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">
                       {item.row_count} rows
                     </span>
                   )}
                 </div>
                 <button
-                  onClick={() => handleCopyQuery(item.query)}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition-all"
+                  onClick={(e) => handleCopyQuery(e, item.query)}
+                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-slate-700 rounded-lg transition-all"
                   title="Copy query"
                 >
-                  <Copy className="w-3 h-3" />
+                  <Copy className="w-3 h-3 text-slate-400" />
                 </button>
               </div>
 
-              {/* Query */}
-              <div
-                className="text-sm font-mono bg-gray-900 p-2 rounded cursor-pointer hover:bg-gray-850"
-                onClick={() => onQuerySelect(item.query)}
-              >
-                <pre className="whitespace-pre-wrap break-words text-xs">
-                  {item.query.length > 200
-                    ? item.query.substring(0, 200) + '...'
+              {/* Query Preview */}
+              <div className="font-mono text-xs bg-slate-900/50 p-2 rounded-lg text-slate-400 overflow-hidden">
+                <pre className="whitespace-pre-wrap break-words line-clamp-2">
+                  {item.query.length > 150
+                    ? item.query.substring(0, 150) + '...'
                     : item.query}
                 </pre>
               </div>
 
               {/* Error */}
               {!item.success && item.error && (
-                <div className="mt-2 text-xs text-red-400 bg-red-900/20 p-2 rounded">
-                  {item.error.substring(0, 100)}
-                  {item.error.length > 100 && '...'}
+                <div className="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
+                  {item.error.substring(0, 80)}
+                  {item.error.length > 80 && '...'}
                 </div>
               )}
             </div>
@@ -134,6 +139,8 @@ const QueryHistory = ({ onQuerySelect }) => {
       </div>
     </div>
   );
-};
+});
+
+QueryHistory.displayName = 'QueryHistory';
 
 export default QueryHistory;

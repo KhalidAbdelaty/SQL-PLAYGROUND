@@ -1,14 +1,30 @@
 import axios from 'axios';
 import config from '../config';
 
-// Get or create session ID
+// Get or create session ID - now includes user ID for isolation
 const getSessionId = () => {
-  let sessionId = localStorage.getItem(config.SESSION_STORAGE_KEY);
+  // Include the current user's ID in the session key to isolate history per user
+  const token = localStorage.getItem('token');
+  const userKey = token ? `_${token.substring(0, 16)}` : '';
+  const sessionKey = `${config.SESSION_STORAGE_KEY}${userKey}`;
+  
+  let sessionId = localStorage.getItem(sessionKey);
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    localStorage.setItem(config.SESSION_STORAGE_KEY, sessionId);
+    localStorage.setItem(sessionKey, sessionId);
   }
   return sessionId;
+};
+
+// Reset session ID (called on login/logout to get fresh history)
+const resetSessionId = () => {
+  // Remove all session keys to clear history across users
+  const keys = Object.keys(localStorage);
+  keys.forEach(key => {
+    if (key.startsWith(config.SESSION_STORAGE_KEY)) {
+      localStorage.removeItem(key);
+    }
+  });
 };
 
 // Create axios instance
@@ -124,7 +140,57 @@ export const apiService = {
     const response = await api.get('/health');
     return response.data;
   },
+
+  // Query formatting
+  formatQuery: async (query, options = {}) => {
+    const response = await api.post('/api/query/format', {
+      query,
+      keyword_case: options.keyword_case || 'upper',
+      identifier_case: options.identifier_case || null,
+      indent_width: options.indent_width || 4,
+      strip_comments: options.strip_comments || false,
+    });
+    return response.data;
+  },
+
+  // Saved queries
+  getSavedQueries: async (options = {}) => {
+    const response = await api.get('/api/query/saved', {
+      params: {
+        favorites_only: options.favorites_only || false,
+        search: options.search || '',
+        limit: options.limit || 50,
+      },
+    });
+    return response.data;
+  },
+
+  saveQuery: async (data) => {
+    const response = await api.post('/api/query/saved', data);
+    return response.data;
+  },
+
+  updateSavedQuery: async (queryId, data) => {
+    const response = await api.put(`/api/query/saved/${queryId}`, data);
+    return response.data;
+  },
+
+  deleteSavedQuery: async (queryId) => {
+    const response = await api.delete(`/api/query/saved/${queryId}`);
+    return response.data;
+  },
+
+  toggleQueryFavorite: async (queryId) => {
+    const response = await api.post(`/api/query/saved/${queryId}/favorite`);
+    return response.data;
+  },
+
+  // Cache stats
+  getCacheStats: async () => {
+    const response = await api.get('/api/cache/stats');
+    return response.data;
+  },
 };
 
-export { getSessionId };
+export { getSessionId, resetSessionId };
 export default api;

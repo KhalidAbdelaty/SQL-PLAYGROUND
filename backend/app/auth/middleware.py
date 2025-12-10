@@ -68,7 +68,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     content={"detail": "Session expired or invalid"}
                 )
             
-            # Add user info to request state
+            # Add user info to request state (both as dict and individual properties)
+            request.state.user = {
+                'user_id': user['user_id'],
+                'username': user['username'],
+                'role': user['role'],
+                'session_id': session_id
+            }
+            # Also set individual properties for backwards compatibility
             request.state.user_id = user['user_id']
             request.state.username = user['username']
             request.state.role = user['role']

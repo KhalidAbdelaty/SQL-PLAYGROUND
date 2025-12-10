@@ -1,9 +1,21 @@
 import React, { useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AgGridReact } from 'ag-grid-react';
-import { Download, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { 
+  Download, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  FileDown,
+  Clock,
+  Table2,
+  Zap,
+  Copy
+} from 'lucide-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import config from '../config';
+import { showToast } from './Toast';
 
 const ResultsGrid = ({ result, onExport }) => {
   // Generate column definitions from data
@@ -35,81 +47,175 @@ const ResultsGrid = ({ result, onExport }) => {
     }
   };
 
+  const handleCopyResults = () => {
+    if (result?.data && result.data.length > 0) {
+      const text = JSON.stringify(result.data, null, 2);
+      navigator.clipboard.writeText(text);
+      showToast.copied('Results copied to clipboard');
+    }
+  };
+
+  // Empty state
   if (!result) {
     return (
-      <div className="flex items-center justify-center h-full bg-gray-900 text-gray-400">
-        <div className="text-center">
-          <p className="text-lg">No query executed yet</p>
-          <p className="text-sm mt-2">Write a SQL query and press Execute to see results</p>
-        </div>
+      <div className="flex items-center justify-center h-full glass-dark">
+        <motion.div 
+          className="text-center p-8"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div 
+            className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center"
+            animate={{ 
+              boxShadow: ['0 0 0 rgba(99, 102, 241, 0)', '0 0 30px rgba(99, 102, 241, 0.2)', '0 0 0 rgba(99, 102, 241, 0)']
+            }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            <Table2 className="w-10 h-10 text-slate-600" />
+          </motion.div>
+          <p className="text-lg text-slate-400 font-medium">No query executed yet</p>
+          <p className="text-sm text-slate-500 mt-2">
+            Write a SQL query and press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-xs">Ctrl+Enter</kbd> to see results
+          </p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
+    <div className="flex flex-col h-full glass-dark">
       {/* Result Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
-        <div className="flex items-center space-x-4">
-          {/* Status Icon */}
-          {result.success ? (
-            <div className="flex items-center space-x-2 text-green-400">
-              <CheckCircle className="w-5 h-5" />
-              <span className="font-semibold">Success</span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2 text-red-400">
-              <XCircle className="w-5 h-5" />
-              <span className="font-semibold">Error</span>
-            </div>
-          )}
+      <motion.div 
+        className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-700/50 overflow-x-auto no-scrollbar"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          {/* Status Badge */}
+          <AnimatePresence mode="wait">
+            {result.success ? (
+              <motion.div 
+                key="success"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-lg shrink-0"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+              >
+                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
+                <span className="text-xs sm:text-sm font-medium text-green-400">Success</span>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="error"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 bg-red-500/10 border border-red-500/30 rounded-lg shrink-0"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+              >
+                <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400" />
+                <span className="text-xs sm:text-sm font-medium text-red-400">Error</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Result Info */}
+          {/* Result Stats */}
           {result.success && (
-            <div className="text-sm text-gray-300">
-              <span className="text-gray-500">Rows:</span>{' '}
-              <span className="font-semibold">{result.row_count || 0}</span>
-              <span className="mx-2 text-gray-600">|</span>
-              <span className="text-gray-500">Time:</span>{' '}
-              <span className="font-semibold">{result.execution_time}s</span>
-            </div>
+            <motion.div 
+              className="flex items-center gap-2 sm:gap-4 shrink-0"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-400">
+                <Table2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-400" />
+                <span className="font-medium text-white">{result.row_count || 0}</span>
+                <span className="hidden sm:inline">rows</span>
+              </div>
+              
+              <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-400">
+                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-400" />
+                <span className="font-medium text-white">{result.execution_time}s</span>
+              </div>
+
+              {result.from_cache && (
+                <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-accent-500/10 border border-accent-500/30 rounded-lg text-[10px] sm:text-xs text-accent-400">
+                  <Zap className="w-3 h-3" />
+                  <span className="hidden sm:inline">cached</span>
+                </div>
+              )}
+            </motion.div>
           )}
 
           {/* Warning */}
           {result.requires_confirmation && (
-            <div className="flex items-center space-x-2 text-yellow-400">
-              <AlertTriangle className="w-5 h-5" />
-              <span className="text-sm">{result.warning}</span>
+            <div className="flex items-center gap-2 text-amber-400 shrink-0">
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">{result.warning}</span>
             </div>
           )}
         </div>
 
         {/* Export Buttons */}
         {result.success && result.data && result.data.length > 0 && (
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-gray-400">Export:</span>
-            <button
+          <motion.div 
+            className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-4"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <span className="text-xs text-slate-500 hidden lg:block">Export:</span>
+            
+            <motion.button
+              onClick={handleCopyResults}
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 glass rounded-lg text-slate-400 hover:text-white hover:border-primary-500/50 transition-all text-xs sm:text-sm"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              title="Copy JSON"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Copy</span>
+            </motion.button>
+
+            <motion.button
               onClick={() => handleExport('csv')}
-              className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 glass rounded-lg text-slate-400 hover:text-white hover:border-green-500/50 transition-all text-xs sm:text-sm"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              title="Export CSV"
             >
-              CSV
-            </button>
-            <button
+              <FileDown className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">CSV</span>
+            </motion.button>
+            
+            <motion.button
               onClick={() => handleExport('json')}
-              className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 glass rounded-lg text-slate-400 hover:text-white hover:border-amber-500/50 transition-all text-xs sm:text-sm"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              title="Export JSON"
             >
-              JSON
-            </button>
-          </div>
+              <FileDown className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">JSON</span>
+            </motion.button>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Result Content */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
+        {/* Gradient accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/30 to-transparent" />
+        
         {result.success ? (
           result.data && result.data.length > 0 ? (
             // Data Grid
-            <div className="ag-theme-alpine h-full" style={{ backgroundColor: '#111827' }}>
+            <motion.div 
+              className="ag-theme-alpine-dark h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <AgGridReact
                 rowData={result.data}
                 columnDefs={columnDefs}
@@ -120,28 +226,53 @@ const ResultsGrid = ({ result, onExport }) => {
                 suppressMovableColumns={false}
                 enableCellTextSelection={true}
                 ensureDomOrder={true}
+                animateRows={true}
+                rowSelection="multiple"
               />
-            </div>
+            </motion.div>
           ) : (
             // No data message
-            <div className="flex items-center justify-center h-full text-gray-400">
+            <motion.div 
+              className="flex items-center justify-center h-full"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
               <div className="text-center">
-                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-500" />
-                <p className="text-lg">{result.message || 'Query executed successfully'}</p>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+                >
+                  <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
+                </motion.div>
+                <p className="text-lg text-white font-medium">{result.message || 'Query executed successfully'}</p>
+                {result.row_count > 0 && (
+                  <p className="text-sm text-slate-400 mt-1">{result.row_count} row(s) affected</p>
+                )}
               </div>
-            </div>
+            </motion.div>
           )
         ) : (
           // Error message
-          <div className="flex items-center justify-center h-full text-red-400 p-4">
+          <motion.div 
+            className="flex items-center justify-center h-full p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
             <div className="text-center max-w-2xl">
-              <XCircle className="w-12 h-12 mx-auto mb-2" />
-              <p className="text-lg font-semibold mb-2">Query Error</p>
-              <pre className="text-sm text-left bg-gray-800 p-4 rounded overflow-auto max-h-64">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200 }}
+              >
+                <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+              </motion.div>
+              <p className="text-lg font-semibold text-red-400 mb-4">Query Error</p>
+              <pre className="text-sm text-left bg-slate-900/80 border border-red-500/20 p-4 rounded-xl overflow-auto max-h-64 text-red-300 font-mono">
                 {result.error}
               </pre>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
