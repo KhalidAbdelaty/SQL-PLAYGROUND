@@ -1,69 +1,113 @@
-# 🚀 Ever Wished You Could Practice SQL Without Breaking Production?
+# 🚀 SQL Playground
 
-Yeah, me too. That's exactly why I built this.
+**A modern, full-stack SQL development environment with isolated sandbox databases.**
 
-Welcome to **SQL Playground** – a full-stack web application where you can write, execute, and experiment with SQL queries in a safe, isolated environment. No more "Oops, I just dropped the production table" moments. 😅
+Practice SQL without fear. Experiment freely. Learn by doing.
 
 ![SQL Playground](https://img.shields.io/badge/Status-Live-brightgreen) ![React](https://img.shields.io/badge/React-18-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green) ![SQL Server](https://img.shields.io/badge/SQL%20Server-2019+-red)
 
 ---
 
+## ✨ Screenshots
+
+### Login Page
+Modern glassmorphism design with animated gradient background.
+
+![Login Page](images/login.png)
+
+### SQL Playground Interface
+Full-featured SQL development environment with schema browser, query history, and results grid.
+
+![SQL Playground](images/portal_sandbox.png)
+
+---
+
 ## 💡 What Makes This Special?
 
-This isn't just another SQL editor. Here's what sets it apart:
-
 ### 🎯 **Sandbox Environments**
-Every user gets their own isolated SQL Server database. You can experiment, break things, and learn without consequences. It's like having your own personal SQL playground.
+Every user gets their own isolated SQL Server database. Experiment, break things, and learn without consequences.
 
 ### 🔐 **Smart Security**
 - Automatic detection of dangerous queries (DROP, TRUNCATE, etc.)
 - Confirmation dialogs before destructive operations
-- Rate limiting to prevent abuse
 - JWT-based authentication with session management
 - Database size limits (100MB per sandbox)
 
 ### ⚡ **Real-Time Experience**
 - Monaco Editor with SQL syntax highlighting and IntelliSense
 - Live query execution with performance metrics
-- Interactive schema browser
+- Interactive schema browser with drag-and-drop
 - Query history with one-click re-execution
 - Export results to CSV or JSON
 
-### 🎨 **Beautiful UI**
-Built with React and TailwindCSS, it's not just functional – it's actually pleasant to use. Dark mode included because, let's be honest, who codes with light mode? 🌙
+### 🎨 **Aurora Theme Design**
+Beautiful dark mode UI with:
+- Animated gradient mesh backgrounds
+- Glassmorphism effects
+- Smooth animations powered by Framer Motion
+- Fully responsive for mobile devices
+
+---
+
+## 🆕 New Features
+
+### Query Caching
+- LRU cache with TTL for faster repeated queries
+- Cache hit indicator in results
+
+### Saved Queries
+- Save your frequently used queries
+- Organize with tags and favorites
+- Quick access with `Ctrl+Shift+O`
+
+### Query Formatter
+- Beautify SQL with one click
+- Configurable formatting options
+- Keyboard shortcut: `Ctrl+Shift+F`
+
+### Keyboard Shortcuts
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + Enter` | Execute query |
+| `Ctrl + Shift + F` | Format query |
+| `Ctrl + Shift + Q` | Save current query |
+| `Ctrl + Shift + O` | Open saved queries |
+| `Ctrl + Shift + H` | Show all shortcuts |
+| `Ctrl + K` | New query |
+| `Esc` | Close dialogs |
+
+### Toast Notifications
+- Real-time feedback on all actions
+- Success, error, and warning states
+- Query execution results with timing
 
 ---
 
 ## 🛠️ Tech Stack
 
-I chose each technology deliberately to create a robust, scalable solution:
-
 **Frontend:**
 - **React 18** – Modern, component-based UI
-- **Vite** – Lightning-fast development experience
-- **Monaco Editor** – The same editor that powers VS Code
-- **AG Grid** – Professional-grade data tables
+- **Vite** – Lightning-fast development
+- **Monaco Editor** – VS Code's editor
+- **AG Grid** – Professional data tables
 - **TailwindCSS** – Utility-first styling
-- **Axios** – HTTP client with interceptors
+- **Framer Motion** – Smooth animations
 
 **Backend:**
-- **FastAPI** – High-performance async Python framework
-- **SQL Server** – Enterprise-grade database engine
-- **SQLite** – Authentication and analytics storage
+- **FastAPI** – High-performance async Python
+- **SQL Server** – Enterprise-grade database
+- **SQLite** – Authentication storage
 - **pyodbc** – Native SQL Server connectivity
-- **JWT** – Secure token-based authentication
-- **bcrypt** – Industry-standard password hashing
+- **JWT + bcrypt** – Secure authentication
 
 ---
 
 ## 🎬 Quick Start
 
-Get up and running in under 3 minutes:
-
 ### Prerequisites
 - Python 3.8+
 - Node.js 16+
-- SQL Server 2019+ (with Windows or SQL authentication)
+- SQL Server 2019+
 - ODBC Driver 17 for SQL Server
 
 ### Installation
@@ -78,7 +122,7 @@ cd SQL-PlAYGROUND
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate  # On Windows
+venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 ```
 
@@ -126,54 +170,42 @@ npm run dev
 
 ---
 
-## 🎮 Features Walkthrough
+## 🎮 Features
 
 ### For Administrators
-- Full database access with your SQL Server credentials
+- Full database access with SQL Server credentials
 - Execute any query (with safety confirmations)
-- Access to all databases on the server
-- Query performance analytics
+- Access all databases on the server
 
 ### For Sandbox Users
-- Personal isolated database (automatically provisioned)
+- Personal isolated database (auto-provisioned)
 - Safe environment to learn and experiment
 - All CRUD operations supported
-- Limited to your own database (security by design)
 
 ### Query Editor
-- **Syntax Highlighting** – SQL keywords, functions, and more
-- **IntelliSense** – Auto-completion as you type
-- **Execute with Ctrl+Enter** – Fast keyboard shortcuts
-- **Query History** – Never lose a query again
-- **Performance Metrics** – See execution time and row counts
-
-### Schema Browser
-- Expand/collapse database objects
-- View table structures with column details
-- One-click table preview
-- Quick SELECT generation
+- Syntax highlighting with IntelliSense
+- Execute with `Ctrl+Enter`
+- Format with `Ctrl+Shift+F`
+- Query history with re-execution
+- Drag-and-drop table names
 
 ### Results Grid
-- Sortable columns
-- Filterable data
+- Sortable and filterable columns
 - Pagination for large datasets
 - Export to CSV or JSON
-- Copy to clipboard
+- Copy results to clipboard
 
 ---
 
-## 🔒 Security Features
+## 🔒 Security
 
-I take security seriously. Here's what's built-in:
-
-✅ **SQL Injection Protection** – Parameterized queries everywhere  
-✅ **Rate Limiting** – 60 requests per minute per IP  
-✅ **Dangerous Query Detection** – Warns before DROP, TRUNCATE, DELETE  
-✅ **Sandbox Isolation** – Users can't access each other's data  
-✅ **Session Management** – Automatic logout after 8 hours  
-✅ **Audit Logging** – All authentication events tracked  
-✅ **Password Hashing** – bcrypt with salt  
-✅ **Database Size Limits** – Prevent resource abuse  
+✅ SQL Injection Protection  
+✅ Rate Limiting (60 req/min)  
+✅ Dangerous Query Detection  
+✅ Sandbox Isolation  
+✅ Session Management (8hr expiry)  
+✅ Password Hashing (bcrypt)  
+✅ Database Size Limits  
 
 ---
 
@@ -181,27 +213,29 @@ I take security seriously. Here's what's built-in:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ Monaco Editor│  │  AG Grid     │  │ Auth Context │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│                      Frontend (React)                        │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐            │
+│  │   Monaco   │  │  AG Grid   │  │   Toast    │            │
+│  │   Editor   │  │  Results   │  │  Notifs    │            │
+│  └────────────┘  └────────────┘  └────────────┘            │
 └─────────────────────────────────────────────────────────────┘
-                            │
-                         HTTPS/WSS
-                            │
+                           │
+                        HTTPS
+                           │
 ┌─────────────────────────────────────────────────────────────┐
-│                      Backend (FastAPI)                       │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ Auth Service │  │Query Executor│  │ Provisioner  │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│                     Backend (FastAPI)                        │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐            │
+│  │    Auth    │  │   Query    │  │   Cache    │            │
+│  │  Service   │  │  Executor  │  │  Service   │            │
+│  └────────────┘  └────────────┘  └────────────┘            │
 └─────────────────────────────────────────────────────────────┘
-                            │
-                    ┌───────┴───────┐
-                    │               │
-            ┌───────▼──────┐ ┌─────▼──────┐
-            │  SQL Server  │ │  SQLite    │
-            │  (Queries)   │ │  (Auth)    │
-            └──────────────┘ └────────────┘
+                           │
+                   ┌───────┴───────┐
+                   │               │
+           ┌───────▼──────┐ ┌─────▼──────┐
+           │  SQL Server  │ │  SQLite    │
+           │  (Queries)   │ │  (Auth)    │
+           └──────────────┘ └────────────┘
 ```
 
 ---
@@ -209,26 +243,24 @@ I take security seriously. Here's what's built-in:
 ## 📊 API Endpoints
 
 ### Authentication
-- `POST /api/auth/setup-admin` – Create first admin user
-- `POST /api/auth/login` – Login (admin or sandbox)
+- `POST /api/auth/login` – Login
 - `POST /api/auth/register-sandbox` – Create sandbox account
 - `POST /api/auth/logout` – Logout and cleanup
-- `POST /api/auth/extend-session` – Extend session duration
+- `POST /api/auth/extend-session` – Extend session
 
 ### Query Execution
-- `POST /api/query/execute` – Execute SQL query
-- `GET /api/query/history` – Get query history
-- `DELETE /api/query/history` – Clear history
+- `POST /api/execute` – Execute SQL query
+- `GET /api/history` – Get query history
+- `POST /api/query/format` – Format SQL
 
-### Schema Management
-- `GET /api/schema/databases` – List databases
-- `GET /api/schema/tables` – List tables
-- `GET /api/schema/columns` – Get table structure
-- `GET /api/schema/preview` – Preview table data
+### Saved Queries
+- `GET /api/query/saved` – List saved queries
+- `POST /api/query/saved` – Save a query
+- `DELETE /api/query/saved/{id}` – Delete saved query
 
-### Health & Analytics
-- `GET /health` – System health check
-- `GET /api/analytics/stats` – Usage statistics
+### Schema
+- `GET /api/databases` – List databases
+- `GET /api/schema/{database}` – Get schema
 
 **Full API Documentation:** http://localhost:8000/docs
 
@@ -237,41 +269,40 @@ I take security seriously. Here's what's built-in:
 ## 🎯 Use Cases
 
 ### 👨‍🎓 Learning SQL
-Perfect for students and beginners who want to practice SQL without setting up their own database server.
+Practice without setting up your own database server.
 
 ### 🧪 Testing Queries
-Test complex queries in a safe environment before running them in production.
+Test complex queries safely before production.
 
 ### 👨‍🏫 Teaching
-Instructors can give students isolated environments for assignments and exercises.
+Give students isolated environments for exercises.
 
 ### 🔬 Experimentation
-Try out new SQL features, test performance, or prototype database designs.
+Try new SQL features and prototype designs.
 
 ---
 
 ## 🚧 Roadmap
 
-Here's what's coming next:
-
+- [x] Query caching system
+- [x] Saved query templates
+- [x] Keyboard shortcuts
+- [x] Toast notifications
+- [x] Mobile responsive design
 - [ ] Query execution plans visualization
 - [ ] Collaborative query sharing
-- [ ] Saved query templates
 - [ ] Database diagram generator
 - [ ] Multi-database support (PostgreSQL, MySQL)
-- [ ] Query performance comparison
-- [ ] Dark/Light theme toggle
-- [ ] Mobile responsive design improvements
 
 ---
 
 ## 🤝 Contributing
 
-Found a bug? Have a feature idea? Contributions are welcome!
+Contributions welcome!
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
@@ -279,40 +310,21 @@ Found a bug? Have a feature idea? Contributions are welcome!
 
 ## 📝 License
 
-This project is licensed under the MIT License – feel free to use it, modify it, and build upon it.
+MIT License – feel free to use, modify, and build upon it.
 
 ---
 
 ## 👨‍💻 About Me
 
-I'm **Khalid Abdelaty**, a Data Engineer passionate about building tools that make data work easier and more accessible. This project combines my love for SQL, full-stack development, and creating practical solutions to real problems.
+**Khalid Abdelaty** – Data Engineer passionate about building tools that make data work easier.
 
-**Connect with me:**
 - 💼 [LinkedIn](https://www.linkedin.com/in/khalidabdelaty/)
 - 🐙 [GitHub](https://github.com/KhalidAbdelaty)
 
 ---
 
-## 🙏 Acknowledgments
-
-Built with:
-- ☕ Coffee (lots of it)
-- 🎵 Music (even more of it)
-- 💡 The desire to make SQL accessible to everyone
-
----
-
-## ⚡ Final Thoughts
-
-SQL is powerful, but it can be intimidating. My goal with this project is to remove that intimidation and make SQL fun, safe, and accessible.
-
-Whether you're a beginner learning your first SELECT statement or an experienced developer testing complex queries, I hope this tool makes your life a little easier.
-
-**Happy Querying!** 🎉
-
----
-
 <div align="center">
   <sub>Built with ❤️ by Khalid Abdelaty</sub>
+  <br>
+  <sub>© 2025</sub>
 </div>
-
